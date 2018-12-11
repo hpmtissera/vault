@@ -25,19 +25,29 @@ fun main(args: Array<String>) {
     Database.connect("jdbc:postgresql://localhost:5432/vault", driver = "org.postgresql.Driver",
             user = "vault", password = "password")
 
+    addEntry("Postbank" + Random.nextInt(0, 100), "Username" + Random.nextInt(0, 100), "Saman")
+}
+
+fun addEntry(type: String, key: String, value: String) : String {
+    var id : String? = null
     transaction {
         // print sql to std-out
         addLogger(StdOutSqlLogger)
 
-        val id = SecureData.insert {
-            it[type] = "Postbank" + Random.nextInt(0, 100)
-            it[key] = "Username" + Random.nextInt(0, 100)
-            it[value] = "Saman"
+        val entityId = SecureData.insert {
+            it[SecureData.type] = type
+            it[SecureData.key] = key
+            it[SecureData.value] = value
         } get SecureData.id
 
         DataEntry.all().forEach { print(it) }
-    }
+        id = entityId?.value.toString()
 
+    }
+    when (id) {
+        null -> throw Exception("Error while trying to insert entry. {type: $type, key: $key, value: $value")
+        else -> return id as String
+    }
 }
 
 object SecureData : UUIDTable("secure_data") {
@@ -54,6 +64,6 @@ class DataEntry(id:  EntityID<UUID>) : UUIDEntity(id) {
     var value by SecureData.value
 
     override fun toString(): String {
-        return "Type : $type, Key : $key, Value : $value"
+        return "\nType : $type, Key : $key, Value : $value"
     }
 }
