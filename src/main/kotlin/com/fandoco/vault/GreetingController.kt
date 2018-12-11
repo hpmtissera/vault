@@ -30,8 +30,6 @@ fun main(args: Array<String>) {
         // print sql to std-out
         addLogger(StdOutSqlLogger)
 
-        SchemaUtils.create (Cities)
-
         // insert new city. SQL: INSERT INTO Cities (name) VALUES ('St. Petersburg')
         val stPeteId = Cities.insert {
             it[name] = "St. Petersburg"
