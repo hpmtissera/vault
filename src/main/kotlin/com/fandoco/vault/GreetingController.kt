@@ -1,15 +1,14 @@
 package com.fandoco.vault
 
-import org.jetbrains.exposed.dao.EntityID
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.IntIdTable
+import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.random.Random
 
 @RestController
 class GreetingController {
@@ -30,27 +29,31 @@ fun main(args: Array<String>) {
         // print sql to std-out
         addLogger(StdOutSqlLogger)
 
-        // insert new city. SQL: INSERT INTO Cities (name) VALUES ('St. Petersburg')
-        val stPeteId = Cities.insert {
-            it[name] = "St. Petersburg"
-        } get Cities.id
+        val id = SecureData.insert {
+            it[type] = "Postbank" + Random.nextInt(0, 100)
+            it[key] = "Username" + Random.nextInt(0, 100)
+            it[value] = "Saman"
+        } get SecureData.id
 
-        // 'select *' SQL: SELECT Cities.id, Cities.name FROM Cities
-        City.all().forEach { println(it.name) }
+        DataEntry.all().forEach { print(it) }
     }
 
 }
 
-object Cities: IntIdTable() {
-    val name = varchar("name", 50)
+object SecureData : UUIDTable("secure_data") {
+    val type = text("type")
+    val key = text("key")
+    val value = text("value")
 }
 
-class City( id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<City>(Cities)
+class DataEntry(id:  EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<DataEntry>(SecureData)
 
-    var name by Cities.name
+    var type by SecureData.type
+    var key by SecureData.key
+    var value by SecureData.value
 
     override fun toString(): String {
-        return name
+        return "Type : $type, Key : $key, Value : $value"
     }
 }
