@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import javax.xml.crypto.Data
 import kotlin.random.Random
 
 @RestController
@@ -28,8 +29,8 @@ fun main(args: Array<String>) {
     addEntry("Postbank" + Random.nextInt(0, 100), "Username" + Random.nextInt(0, 100), "Saman")
 }
 
-fun addEntry(type: String, key: String, value: String) : String {
-    var id : String? = null
+fun addEntry(type: String, key: String, value: String): String {
+    var id: String? = null
     transaction {
         // print sql to std-out
         addLogger(StdOutSqlLogger)
@@ -50,13 +51,48 @@ fun addEntry(type: String, key: String, value: String) : String {
     }
 }
 
+fun getEntry(type: String, key: String) {
+    transaction {
+        addLogger(StdOutSqlLogger)
+
+        val it = SecureData.select { (SecureData.type eq type) and (SecureData.key eq key) }.single()
+        val entry = DataEntry(it[SecureData.id])
+        entry.type = it[SecureData.type]
+        entry.key = it[SecureData.key]
+        entry.value = it[SecureData.value]
+    }
+}
+
+fun updateEntry(type: String, key: String, value: String) {
+    transaction {
+        addLogger(StdOutSqlLogger)
+
+        SecureData.update {
+            it[SecureData.type] = type
+            it[SecureData.key] = key
+            it[SecureData.value] = value
+        }
+
+    }
+}
+
+fun deleteEntry(type: String, key: String) {
+    transaction {
+        addLogger(StdOutSqlLogger)
+
+        SecureData.deleteWhere {
+            (SecureData.type eq type) and (SecureData.key eq key)
+        }
+    }
+}
+
 object SecureData : UUIDTable("secure_data") {
     val type = text("type")
     val key = text("key")
     val value = text("value")
 }
 
-class DataEntry(id:  EntityID<UUID>) : UUIDEntity(id) {
+class DataEntry(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<DataEntry>(SecureData)
 
     var type by SecureData.type
