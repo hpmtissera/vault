@@ -5,7 +5,6 @@ import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.UUIDTable
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.collections.ArrayList
@@ -32,6 +31,9 @@ fun main(args: Array<String>) {
 
     println("\n$entry\n")
 
+    val postBankEntries = getEntries("Postbank")
+    println("\n$postBankEntries\n")
+
     deleteEntry(SecureDataEntry("Postbank", "Username", null))
 
     printAll()
@@ -45,15 +47,11 @@ fun main(args: Array<String>) {
 }
 
 fun printAll() {
-
     val entries = getAllEntries()
-
-        if(entries.isEmpty()) {
-            println("\nTable is empty.")
-        } else {
-            println(entries)
-        }
-
+    when {
+        entries.isEmpty() -> println("\nTable is empty.")
+        else -> println(entries)
+    }
 }
 
 fun addEntry(type: String, key: String, value: String): String {
@@ -62,10 +60,10 @@ fun addEntry(type: String, key: String, value: String): String {
         // print sql to std-out
         addLogger(StdOutSqlLogger)
 
-        val entityId = SecureDataTable.insert {
-            it[SecureDataTable.type] = type
-            it[SecureDataTable.key] = key
-            it[SecureDataTable.value] = value
+        val entityId = SecureDataTable.insert { row ->
+            row[SecureDataTable.type] = type
+            row[SecureDataTable.key] = key
+            row[SecureDataTable.value] = value
         } get SecureDataTable.id
 
         id = entityId?.value.toString()
@@ -83,8 +81,12 @@ fun getEntry(id: String): SecureDataEntry? {
         addLogger(StdOutSqlLogger)
 
         val row = SecureDataTable.select { SecureDataTable.id eq UUID.fromString(id) }.singleOrNull()
-        if(row != null) {
-            entry = SecureDataEntry(row[SecureDataTable.id].toString(), row[SecureDataTable.type], row[SecureDataTable.key], row[SecureDataTable.value])
+        if (row != null) {
+            entry = SecureDataEntry(
+                    row[SecureDataTable.id].toString(),
+                    row[SecureDataTable.type],
+                    row[SecureDataTable.key],
+                    row[SecureDataTable.value])
         }
     }
     return entry
@@ -95,15 +97,39 @@ fun getEntry(type: String, key: String): SecureDataEntry? {
     transaction {
         addLogger(StdOutSqlLogger)
 
-        val row = SecureDataTable.select { (SecureDataTable.type eq type) and (SecureDataTable.key eq key) }.singleOrNull()
-        if(row != null) {
-            entry = SecureDataEntry(row[SecureDataTable.id].toString(), row[SecureDataTable.type], row[SecureDataTable.key], row[SecureDataTable.value])
+        val row = SecureDataTable.select {
+            (SecureDataTable.type eq type) and (SecureDataTable.key eq key)
+        }.singleOrNull()
+
+        if (row != null) {
+            entry = SecureDataEntry(
+                    row[SecureDataTable.id].toString(),
+                    row[SecureDataTable.type],
+                    row[SecureDataTable.key],
+                    row[SecureDataTable.value])
         }
     }
     return entry
 }
 
-fun getAllEntries() : List<SecureDataEntry> {
+fun getEntries(type: String): List<SecureDataEntry> {
+    val entries = ArrayList<SecureDataEntry>()
+    transaction {
+        addLogger(StdOutSqlLogger)
+
+        SecureDataTable.select { SecureDataTable.type eq type }.forEach { row ->
+            entries.add(SecureDataEntry(
+                    row[SecureDataTable.id].toString(),
+                    row[SecureDataTable.type],
+                    row[SecureDataTable.key],
+                    row[SecureDataTable.value]))
+        }
+
+    }
+    return entries
+}
+
+fun getAllEntries(): List<SecureDataEntry> {
     val entries = ArrayList<SecureDataEntry>()
     transaction {
         SecureDataRow.all().forEach { entries.add(SecureDataEntry(it.id.toString(), it.type, it.key, it.value)) }
@@ -119,7 +145,8 @@ fun updateEntry(type: String, key: String, value: String?) {
     transaction {
         addLogger(StdOutSqlLogger)
 
-        SecureDataTable.update({(SecureDataTable.type eq type) and (SecureDataTable.key eq key)}) {
+        SecureDataTable.update({ (SecureDataTable.type eq type) and (SecureDataTable.key eq key) })
+        {
             it[SecureDataTable.value] = value
         }
 
@@ -166,12 +193,6 @@ class SecureDataRow(id: EntityID<UUID>) : UUIDEntity(id) {
     var key by SecureDataTable.key
     var value by SecureDataTable.value
 
-    override fun toString(): String {
-        return "\nID : $id" +
-                "\nType : $type" +
-                "\nKey : $key" +
-                "\nValue : $value\n"
-    }
 }
 
 data class SecureDataEntry(val id: String?, val type: String, val key: String, val value: String?) {
