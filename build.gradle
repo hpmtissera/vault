@@ -21,6 +21,10 @@ jar {
     version = '0.1.0'
 }
 
+bootRun {
+    main = 'com.fandoco.vault.ApplicationKt'
+}
+
 repositories {
     jcenter()
 }
