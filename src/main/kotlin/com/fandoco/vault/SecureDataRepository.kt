@@ -18,8 +18,20 @@ import kotlin.collections.HashSet
 object SecureDataRepository {
 
     init {
-        Database.connect("jdbc:postgresql://localhost:5432/vault", driver = "org.postgresql.Driver",
-                user = "vault", password = "password")
+
+        var fullDatabaseUrl = System.getenv("DATABASE_URL")
+
+        if(fullDatabaseUrl.isNullOrBlank()) {
+            fullDatabaseUrl = "postgres://vault:password@localhost:5432/vault"
+        }
+
+        val databaseUrl = fullDatabaseUrl.substringAfterLast("@")
+        val usernameAndPassword = fullDatabaseUrl.substringAfter("postgres://").substringBeforeLast("@").split(":")
+
+
+        Database.connect("jdbc:postgresql://$databaseUrl", driver = "org.postgresql.Driver",
+                user = usernameAndPassword[0], password = usernameAndPassword[1])
+
     }
 
     fun deleteAll() {
