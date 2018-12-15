@@ -8,39 +8,12 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
-fun main(args: Array<String>) {
-
-    val id1 = SecureDataRepository.addEntry("Postbank", "Username", "Saman")
-    val id2 = SecureDataRepository.addEntry("Postbank", "Password", "Kamal")
-
-    println("\nEntry added : $id1")
-    println("\nEntry added : $id2")
-
-    SecureDataRepository.printAll()
-
-    SecureDataRepository.updateEntry(SecureDataEntry("Postbank", "Username", "Samankamal"))
-
-    SecureDataRepository.printAll()
-
-    val entry = SecureDataRepository.getEntry("Postbank", "Username")
-
-    println("\n$entry\n")
-
-    val postBankEntries = SecureDataRepository.getEntries("Postbank")
-    println("\n$postBankEntries\n")
-
-    SecureDataRepository.deleteEntry(SecureDataEntry("Postbank", "Username", null))
-
-    SecureDataRepository.printAll()
-
-    println("UUID = $id2")
-    println("UUID from String = ${UUID.fromString(id2)}")
-    SecureDataRepository.deleteEntry(id2)
-
-    SecureDataRepository.printAll()
-
-}
+//fun main(args: Array<String>) {
+////    SecureDataRepository.testRepository()
+//    SecureDataRepository.addTestData()
+//}
 
 object SecureDataRepository {
 
@@ -144,6 +117,18 @@ object SecureDataRepository {
         return entries
     }
 
+    fun getAllTypes() : List<String> {
+        val types = HashSet<String>()
+        transaction {
+            addLogger(StdOutSqlLogger)
+            SecureDataTable.slice(SecureDataTable.type).selectAll().forEach { row ->
+                types.add(row[SecureDataTable.type])
+            }
+
+        }
+        return types.toList()
+    }
+
     fun updateEntry(entry: SecureDataEntry) {
         updateEntry(entry.type, entry.key, entry.value)
     }
@@ -184,6 +169,52 @@ object SecureDataRepository {
                 SecureDataTable.id eq UUID.fromString(id)
             }
         }
+    }
+
+    fun addTestData() {
+        SecureDataRepository.addEntry("Postbank", "Username", "Saman")
+        SecureDataRepository.addEntry("Postbank", "Password", "Kamal")
+        SecureDataRepository.addEntry("Postbank", "AccountNumber", "23434343")
+    }
+
+    fun testRepository() {
+
+        SecureDataRepository.deleteAll()
+
+        val id1 = SecureDataRepository.addEntry("Postbank", "Username", "Saman")
+        val id2 = SecureDataRepository.addEntry("Postbank", "Password", "Kamal")
+        val id3 = SecureDataRepository.addEntry("Rakutenbank", "Username", "Sunil")
+
+        println("\nEntry added : $id1")
+        println("\nEntry added : $id2")
+
+        SecureDataRepository.printAll()
+
+        val types = getAllTypes()
+
+        println("\n $types\n")
+
+        SecureDataRepository.updateEntry(SecureDataEntry("Postbank", "Username", "Samankamal"))
+
+        SecureDataRepository.printAll()
+
+        val entry = SecureDataRepository.getEntry("Postbank", "Username")
+
+        println("\n$entry\n")
+
+        val postBankEntries = SecureDataRepository.getEntries("Postbank")
+        println("\n$postBankEntries\n")
+
+        SecureDataRepository.deleteEntry(SecureDataEntry("Postbank", "Username", null))
+
+        SecureDataRepository.printAll()
+
+        println("UUID = $id2")
+        println("UUID from String = ${UUID.fromString(id2)}")
+        SecureDataRepository.deleteEntry(id2)
+
+        SecureDataRepository.printAll()
+
     }
 }
 

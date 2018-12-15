@@ -14,4 +14,9 @@ class GreetingController {
     fun greeting(@RequestParam(value = "name", defaultValue = "World") name: String) =
             Greeting(counter.incrementAndGet(), "Hello, $name")
 
+    @GetMapping("/data")
+    fun getDataByType(@RequestParam(value = "type") type: String) : List<SecureDataEntry> {
+        return SecureDataRepository.getEntries(type)
+    }
+
 }
