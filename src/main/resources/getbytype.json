@@ -1,0 +1,20 @@
+[
+  {
+    "id": "7ea3d278-c898-4b2a-9739-0290feecfdc6",
+    "type": "Postbank",
+    "key": "Username",
+    "value": "Saman"
+  },
+  {
+    "id": "c7921910-c2d7-4628-9639-17faab076193",
+    "type": "Postbank",
+    "key": "Password",
+    "value": "Kamal"
+  },
+  {
+    "id": "015a92fc-aac0-4231-b85d-4fb0bffc8e1e",
+    "type": "Postbank",
+    "key": "AccountNumber",
+    "value": "23434343"
+  }
+]
