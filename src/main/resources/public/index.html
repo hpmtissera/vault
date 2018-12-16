@@ -3,26 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <title>Prasad's secure Vault</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale =1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="css/index.css" rel="stylesheet"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="js/index.js"></script>
 </head>
-<body onload="getTypes()">
-<table class="table">
-    <tr>
-        <th>Select Category:</th>
-        <td>
-            <select id="categoryDropDown" onchange="showDetails()">
-                <option>  -  </option>
-            </select>
-        </td>
-    </tr>
-</table>
-<table id="dataTable" class="table">
 
-</table>
-<script src="js/index.js"></script>
 
+<body onload="showLogin()">
+
+<div class="header">
+    <h1>Vault</h1>
+</div>
+
+<div class="row">
+    <div class="col-3 menu">
+        <ul>
+            <li id="getdata" onclick="getTypes()">Get Data</li>
+            <li id="add" onclick="displayAddData()">ADD</li>
+            <li id="update" onclick="displayUpdate()">Update</li>
+            <li id="login" onclick="displayLogin()">Login</li>
+        </ul>
+    </div>
+    <p><br></p>
+    <p id=info><br>Please Login</p>
+    <div id=details>
+        <table>
+            <tr>
+                <th style="padding-right: 10px">Select Category:</th>
+                <td>
+                    <select id="categoryDropDown" onchange="showDetails()">
+                        <option> -</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <p id=infoMessage></p>
+        <div class="table-responsive">
+            <table id="dataTable" class="table">
+                <tr>
+                    <th style="width: 5%"></th>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id=loginDetails>
+        <form>
+            ID:
+            <input type="text" id="id"><br>
+            Password:
+            <input type="text" id="password">
+        </form>
+        <button type="button" onclick="checkLogin()">Login</button>
+    </div>
+</div>
 </body>
 </html>
