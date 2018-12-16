@@ -223,6 +223,8 @@ object SecureDataRepository {
         transaction {
             addLogger(StdOutSqlLogger)
 
+            deleteEntries(type)
+
             val typeId: UUID = getTypeIdByName(type) ?: throw Exception("Type $type does not exists!")
 
             TypeTable.deleteWhere {
@@ -231,9 +233,15 @@ object SecureDataRepository {
         }
     }
 
-    fun deleteEntry(entry: SecureDataEntry) {
+    fun deleteEntries(type: String) {
         transaction {
-            deleteEntry(entry.type, entry.key)
+            addLogger(StdOutSqlLogger)
+
+            val typeId: UUID = getTypeIdByName(type) ?: throw Exception("Type $type does not exists!")
+
+            SecureDataTable.deleteWhere {
+                SecureDataTable.type eq typeId
+            }
         }
     }
 
