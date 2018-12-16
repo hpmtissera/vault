@@ -23,13 +23,14 @@
     <div class="col-3 menu">
         <ul>
             <li id="getdata" onclick="getTypes()">Get Data</li>
-            <li id="add" onclick="displayAddData()">ADD</li>
+            <li id="add" onclick="addData()">ADD</li>
             <li id="update" onclick="displayUpdate()">Update</li>
             <li id="login" onclick="displayLogin()">Login</li>
         </ul>
     </div>
-    <p><br></p>
+    <br>
     <p id=info><br>Please Login</p>
+
     <div id=details>
         <table>
             <tr>
@@ -42,6 +43,7 @@
             </tr>
         </table>
         <p id=infoMessage></p>
+
         <div class="table-responsive">
             <table id="dataTable" class="table">
                 <tr>
@@ -50,6 +52,7 @@
             </table>
         </div>
     </div>
+
     <div id=loginDetails>
         <form>
             ID:
@@ -59,6 +62,21 @@
         </form>
         <button type="button" onclick="checkLogin()">Login</button>
     </div>
+
+    <div id=addField class=col-4>
+        New Field Name: <input type="text" id="field" value="">
+        <br>
+        <button type="button" onclick="sendNewField()">Add</button>
+
+    </div>
+    <div id= adddata class=col-4>
+        New key: <input type="key" id="newkey" value="">
+        <br>
+        New Value: <input type="newvalue" id="newvalue" value="">
+        <br>
+        <button type="button" onclick="sendNewData()">Add</button>
+    </div>
+
 </div>
 </body>
 </html>

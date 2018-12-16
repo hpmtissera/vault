@@ -1,25 +1,62 @@
 const domainName = "https://fandoco-vault.herokuapp.com";
 var loggedin = false;
 
-
+//function load onload
 function showLogin() {
+
     document.getElementById("details").style.visibility = "hidden";
     document.getElementById("info").innerHTML = "Please Login";
     document.getElementById("loginDetails").style.visibility = "hidden";
+    document.getElementById("addField").style.visibility = "hidden";
+    document.getElementById("adddata").style.visibility = "hidden";
+
 }
 
-function displayAddData() {
+//onclick Add button
+function addData() {
     clearInformation();
+    document.getElementById("details").style.visibility = "hidden";
+    document.getElementById("info").innerHTML = "Add a new field";
+    document.getElementById("loginDetails").style.visibility = "hidden";
+    document.getElementById("addField").style.visibility = "visible";
+    document.getElementById("adddata").style.visibility = "visible";
+
 }
 
+function sendNewField() {
+    let newField = document.getElementById("field").value
+console.log(newField)
+    var http = new XMLHttpRequest();
+    var url = domainName;
+    var params = 'Type=newField';
+    http.open('POST', url, true);
+
+//Send the proper header information along with the request
+    http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+    http.onreadystatechange = function() {//Call a function when the state changes.
+        if(http.readyState == 4 && http.status == 200) {
+            alert(http.responseText);
+        }
+    }
+    http.send(params);
+}
+//onclick Update button
 function displayUpdate() {
     clearInformation();
 }
 
+//onclick login button
 function displayLogin() {
+    if( loggedin === true){
+        document.getElementById("info").innerHTML = "You Already Logged in";
+
+        return;
+    } else
     document.getElementById("loginDetails").style.visibility = "visible";
 }
 
+//onclick login button submitting id password
 function checkLogin() {
    let id = document.getElementById("id").value
     let password = document.getElementById("password").value
@@ -33,7 +70,6 @@ function checkLogin() {
         document.getElementById("id").value = ""
         document.getElementById("password").value = ""
     }
-
 
 }
 
@@ -113,6 +149,26 @@ function addToDataTable(key, value) {
     cell2.innerHTML = value;
 }
 
+function sendNewData() {
+    let newKey = document.getElementById("newkey").value
+    console.log(newKey)
+    let newVal = document.getElementById("newvalue").value
+    console.log(newVal)
+    var http = new XMLHttpRequest();
+    var url = domainName;
+    var params = 'Key=newkey&value=newVal';
+    http.open('POST', url, true);
+
+//Send the proper header information along with the request
+    http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+    http.onreadystatechange = function() {//Call a function when the state changes.
+        if(http.readyState == 4 && http.status == 200) {
+            alert(http.responseText);
+        }
+    }
+    http.send(params);
+}
 function showDetails() {
     let category = document.getElementById("categoryDropDown");
     let selectedOption = category.options[category.selectedIndex].value;
