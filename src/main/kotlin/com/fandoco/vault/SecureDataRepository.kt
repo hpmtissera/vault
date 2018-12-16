@@ -10,17 +10,13 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 
-//fun main(args: Array<String>) {
-//    SecureDataRepository.testRepository()
-//}
-
 object SecureDataRepository {
 
     init {
 
         var fullDatabaseUrl = System.getenv("DATABASE_URL")
 
-        if(fullDatabaseUrl.isNullOrBlank()) {
+        if (fullDatabaseUrl.isNullOrBlank()) {
             fullDatabaseUrl = "postgres://vault:password@localhost:5432/vault"
         }
 
@@ -33,14 +29,14 @@ object SecureDataRepository {
 
     }
 
-    private fun deleteAll() {
+    fun deleteAll() {
         transaction {
             SecureDataTable.deleteAll()
             TypeTable.deleteAll()
         }
     }
 
-    private fun printAll() {
+    fun printAll() {
 
         val types = getAllTypes()
         when {
@@ -172,13 +168,14 @@ object SecureDataRepository {
                     .slice(SecureDataTable.id, TypeTable.name, SecureDataTable.key, SecureDataTable.value)
                     .select {
                         TypeTable.id eq SecureDataTable.type
+                        TypeTable.name eq type
                     }.forEach { row ->
-                entries.add(SecureDataEntry(
-                        row[SecureDataTable.id].toString(),
-                        row[TypeTable.name],
-                        row[SecureDataTable.key],
-                        row[SecureDataTable.value]))
-            }
+                        entries.add(SecureDataEntry(
+                                row[SecureDataTable.id].toString(),
+                                row[TypeTable.name],
+                                row[SecureDataTable.key],
+                                row[SecureDataTable.value]))
+                    }
 
         }
         return entries
@@ -192,7 +189,7 @@ object SecureDataRepository {
         return entries
     }
 
-    fun getAllTypes() : List<String> {
+    fun getAllTypes(): List<String> {
         val types = HashSet<String>()
         transaction {
             addLogger(StdOutSqlLogger)
@@ -268,48 +265,6 @@ object SecureDataRepository {
         SecureDataRepository.addEntry("Postbank", "AccountNumber", "23434343")
     }
 
-    fun testRepository() {
-
-        SecureDataRepository.deleteAll()
-
-        val type1 = SecureDataRepository.addType("Post Bank")
-        val type2 = SecureDataRepository.addType("Rakuten Bank")
-
-        val id1 = SecureDataRepository.addEntry("Post Bank", "Username", "Saman")
-        val id2 = SecureDataRepository.addEntry("Rakuten Bank", "Password", "Kamal")
-        val id3 = SecureDataRepository.addEntry("Rakuten Bank", "Username", "Sunil")
-
-        println("\nEntry added : $id1")
-        println("\nEntry added : $id2")
-
-        SecureDataRepository.printAll()
-
-        val types = getAllTypes()
-
-        println("\n $types\n")
-
-        SecureDataRepository.updateEntry(SecureDataEntry("Post Bank", "Username", "Samankamal"))
-
-        SecureDataRepository.printAll()
-
-        val entry = SecureDataRepository.getEntry("Post Bank", "Username")
-
-        println("\n$entry\n")
-
-        val postBankEntries = SecureDataRepository.getEntries("Post bank")
-        println("\n$postBankEntries\n")
-
-        SecureDataRepository.deleteEntry(SecureDataEntry("Post Bank", "Username", null))
-
-        SecureDataRepository.printAll()
-
-        println("UUID = $id2")
-        println("UUID from String = ${UUID.fromString(id2)}")
-        SecureDataRepository.deleteEntry(id2)
-
-        SecureDataRepository.printAll()
-
-    }
 }
 
 object TypeTable : UUIDTable("type") {
