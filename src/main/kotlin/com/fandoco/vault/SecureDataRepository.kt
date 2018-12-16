@@ -11,8 +11,7 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 
 //fun main(args: Array<String>) {
-////    SecureDataRepository.testRepository()
-//    SecureDataRepository.addTestData()
+//    SecureDataRepository.testRepository()
 //}
 
 object SecureDataRepository {
@@ -34,15 +33,44 @@ object SecureDataRepository {
 
     }
 
-    fun deleteAll() {
-        transaction { SecureDataTable.deleteAll() }
+    private fun deleteAll() {
+        transaction {
+            SecureDataTable.deleteAll()
+            TypeTable.deleteAll()
+        }
     }
 
-    fun printAll() {
+    private fun printAll() {
+
+        val types = getAllTypes()
+        when {
+            types.isEmpty() -> println("\nTable is empty.")
+            else -> println(types)
+        }
+
         val entries = getAllEntries()
         when {
             entries.isEmpty() -> println("\nTable is empty.")
             else -> println(entries)
+        }
+    }
+
+    fun addType(name: String): String {
+        var id: String? = null
+        transaction {
+            // print sql to std-out
+            addLogger(StdOutSqlLogger)
+
+            val entityId = TypeTable.insert { row ->
+                row[TypeTable.name] = name
+            } get TypeTable.id
+
+            id = entityId?.value.toString()
+
+        }
+        when (id) {
+            null -> throw Exception("Error while trying to insert type. {name: $name")
+            else -> return id as String
         }
     }
 
@@ -52,8 +80,10 @@ object SecureDataRepository {
             // print sql to std-out
             addLogger(StdOutSqlLogger)
 
+            val typeRow: TypeRow = getTypeByName(type) ?: throw Exception("Type $type does not exists!")
+
             val entityId = SecureDataTable.insert { row ->
-                row[SecureDataTable.type] = type
+                row[SecureDataTable.type] = typeRow.id
                 row[SecureDataTable.key] = key
                 row[SecureDataTable.value] = value
             } get SecureDataTable.id
@@ -67,16 +97,43 @@ object SecureDataRepository {
         }
     }
 
+    fun getTypeIdByName(name: String): UUID? {
+        var id: UUID? = null
+        transaction {
+            addLogger(StdOutSqlLogger)
+
+            val row = TypeTable.select { TypeTable.name eq name }.singleOrNull()
+            if (row != null) {
+                id = row[TypeTable.id].value
+            }
+        }
+        return id
+    }
+
+    fun getTypeByName(name: String): TypeRow? {
+        var row: TypeRow? = null
+        transaction {
+            addLogger(StdOutSqlLogger)
+
+            row = TypeRow.find { TypeTable.name eq name }.singleOrNull()
+        }
+        return row
+    }
+
+
     fun getEntry(id: String): SecureDataEntry? {
         var entry: SecureDataEntry? = null
         transaction {
             addLogger(StdOutSqlLogger)
 
-            val row = SecureDataTable.select { SecureDataTable.id eq UUID.fromString(id) }.singleOrNull()
+            val row = (TypeTable innerJoin SecureDataTable)
+                    .slice(SecureDataTable.id, TypeTable.name, SecureDataTable.key, SecureDataTable.value)
+                    .select { TypeTable.id eq SecureDataTable.type }.singleOrNull()
+
             if (row != null) {
                 entry = SecureDataEntry(
                         row[SecureDataTable.id].toString(),
-                        row[SecureDataTable.type],
+                        row[TypeTable.name],
                         row[SecureDataTable.key],
                         row[SecureDataTable.value])
             }
@@ -89,14 +146,16 @@ object SecureDataRepository {
         transaction {
             addLogger(StdOutSqlLogger)
 
-            val row = SecureDataTable.select {
-                (SecureDataTable.type eq type) and (SecureDataTable.key eq key)
-            }.singleOrNull()
+            val row = (TypeTable innerJoin SecureDataTable)
+                    .slice(SecureDataTable.id, TypeTable.name, SecureDataTable.key, SecureDataTable.value)
+                    .select {
+                        TypeTable.id eq SecureDataTable.type and (TypeTable.name eq type) and (SecureDataTable.key eq key)
+                    }.singleOrNull()
 
             if (row != null) {
                 entry = SecureDataEntry(
                         row[SecureDataTable.id].toString(),
-                        row[SecureDataTable.type],
+                        row[TypeTable.name],
                         row[SecureDataTable.key],
                         row[SecureDataTable.value])
             }
@@ -109,10 +168,14 @@ object SecureDataRepository {
         transaction {
             addLogger(StdOutSqlLogger)
 
-            SecureDataTable.select { SecureDataTable.type eq type }.forEach { row ->
+            (TypeTable innerJoin SecureDataTable)
+                    .slice(SecureDataTable.id, TypeTable.name, SecureDataTable.key, SecureDataTable.value)
+                    .select {
+                        TypeTable.id eq SecureDataTable.type
+                    }.forEach { row ->
                 entries.add(SecureDataEntry(
                         row[SecureDataTable.id].toString(),
-                        row[SecureDataTable.type],
+                        row[TypeTable.name],
                         row[SecureDataTable.key],
                         row[SecureDataTable.value]))
             }
@@ -124,7 +187,7 @@ object SecureDataRepository {
     fun getAllEntries(): List<SecureDataEntry> {
         val entries = ArrayList<SecureDataEntry>()
         transaction {
-            SecureDataRow.all().forEach { entries.add(SecureDataEntry(it.id.toString(), it.type, it.key, it.value)) }
+            SecureDataRow.all().forEach { entries.add(SecureDataEntry(it.id.toString(), it.type.id.toString(), it.key, it.value)) }
         }
         return entries
     }
@@ -133,8 +196,8 @@ object SecureDataRepository {
         val types = HashSet<String>()
         transaction {
             addLogger(StdOutSqlLogger)
-            SecureDataTable.slice(SecureDataTable.type).selectAll().forEach { row ->
-                types.add(row[SecureDataTable.type])
+            TypeTable.slice(TypeTable.name).selectAll().forEach { row ->
+                types.add(row[TypeTable.name])
             }
 
         }
@@ -149,11 +212,25 @@ object SecureDataRepository {
         transaction {
             addLogger(StdOutSqlLogger)
 
-            SecureDataTable.update({ (SecureDataTable.type eq type) and (SecureDataTable.key eq key) })
+            val typeId: UUID = getTypeIdByName(type) ?: throw Exception("Type $type does not exists!")
+
+            SecureDataTable.update({ (SecureDataTable.type eq typeId) and (SecureDataTable.key eq key) })
             {
                 it[SecureDataTable.value] = value
             }
 
+        }
+    }
+
+    fun deleteTypeByName(type: String) {
+        transaction {
+            addLogger(StdOutSqlLogger)
+
+            val typeId: UUID = getTypeIdByName(type) ?: throw Exception("Type $type does not exists!")
+
+            TypeTable.deleteWhere {
+                TypeTable.id eq typeId
+            }
         }
     }
 
@@ -167,8 +244,10 @@ object SecureDataRepository {
         transaction {
             addLogger(StdOutSqlLogger)
 
+            val typeId: UUID = getTypeIdByName(type) ?: throw Exception("Type $type does not exists!")
+
             SecureDataTable.deleteWhere {
-                (SecureDataTable.type eq type) and (SecureDataTable.key eq key)
+                (SecureDataTable.type eq typeId) and (SecureDataTable.key eq key)
             }
         }
     }
@@ -193,9 +272,12 @@ object SecureDataRepository {
 
         SecureDataRepository.deleteAll()
 
-        val id1 = SecureDataRepository.addEntry("Postbank", "Username", "Saman")
-        val id2 = SecureDataRepository.addEntry("Postbank", "Password", "Kamal")
-        val id3 = SecureDataRepository.addEntry("Rakutenbank", "Username", "Sunil")
+        val type1 = SecureDataRepository.addType("Post Bank")
+        val type2 = SecureDataRepository.addType("Rakuten Bank")
+
+        val id1 = SecureDataRepository.addEntry("Post Bank", "Username", "Saman")
+        val id2 = SecureDataRepository.addEntry("Rakuten Bank", "Password", "Kamal")
+        val id3 = SecureDataRepository.addEntry("Rakuten Bank", "Username", "Sunil")
 
         println("\nEntry added : $id1")
         println("\nEntry added : $id2")
@@ -206,18 +288,18 @@ object SecureDataRepository {
 
         println("\n $types\n")
 
-        SecureDataRepository.updateEntry(SecureDataEntry("Postbank", "Username", "Samankamal"))
+        SecureDataRepository.updateEntry(SecureDataEntry("Post Bank", "Username", "Samankamal"))
 
         SecureDataRepository.printAll()
 
-        val entry = SecureDataRepository.getEntry("Postbank", "Username")
+        val entry = SecureDataRepository.getEntry("Post Bank", "Username")
 
         println("\n$entry\n")
 
-        val postBankEntries = SecureDataRepository.getEntries("Postbank")
+        val postBankEntries = SecureDataRepository.getEntries("Post bank")
         println("\n$postBankEntries\n")
 
-        SecureDataRepository.deleteEntry(SecureDataEntry("Postbank", "Username", null))
+        SecureDataRepository.deleteEntry(SecureDataEntry("Post Bank", "Username", null))
 
         SecureDataRepository.printAll()
 
@@ -230,8 +312,18 @@ object SecureDataRepository {
     }
 }
 
+object TypeTable : UUIDTable("type") {
+    val name = text("name")
+}
+
+class TypeRow(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<TypeRow>(TypeTable)
+
+    var name by TypeTable.name
+}
+
 object SecureDataTable : UUIDTable("secure_data") {
-    val type = text("type")
+    val type = reference("type_id", TypeTable)
     val key = text("key")
     val value = text("value").nullable()
 }
@@ -239,7 +331,7 @@ object SecureDataTable : UUIDTable("secure_data") {
 class SecureDataRow(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<SecureDataRow>(SecureDataTable)
 
-    var type by SecureDataTable.type
+    var type by TypeRow referencedOn SecureDataTable.type
     var key by SecureDataTable.key
     var value by SecureDataTable.value
 
