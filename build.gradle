@@ -42,7 +42,6 @@ dependencies {
     compile 'org.jetbrains.exposed:exposed:0.11.2'
     compile "org.postgresql:postgresql:42.2.2"
     compile 'org.springframework.boot:spring-boot-starter-security'
-    compile "org.springframework.security.auth:spring-security-oauth2:$spring_boot_version"
     compile("org.springframework.boot:spring-boot-starter-web")
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
