@@ -4,12 +4,50 @@
     <meta charset="UTF-8">
     <title>Prasad's secure Vault</title>
     <meta name="viewport" content="width=device-width, initial-scale =1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+            integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+            crossorigin="anonymous"></script>
     <link href="css/index.css" rel="stylesheet"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="js/index.js"></script>
+    <script type="text/template" id="addtypeform">
+        <form>
+            <div class="form-group">
+                <label for="addType">Enter New Type</label>
+                <input type="addType" class="form-control" id="addType" placeholder=" Type">
+            </div>
+            <button type="button" onclick="sendNewField()" class="btn btn-primary">ADD</button>
+            <p ><br></p>
+            <div class="form-group">
+                <label for="addKey">Enter New Type</label>
+                <input type="addKey" class="form-control" id="addKey" placeholder=" New Key">
+                <label for="addVal">Enter New Value</label>
+                <input type="addVal" class="form-control" id="addVal" placeholder=" New Value">
+            </div>
+            <button type="button" onclick="sendNewField()" class="btn btn-primary">ADD</button>
+        </form>
+    </script>
+    <script type="text/template" id="loginform">
+        <form>
+            <div class="form-group">
+                <label for="id">ID</label>
+                <input type="email" class="form-control" id="id" placeholder="Enter ID">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Password">
+            </div>
+            <button type="button" onclick="checkLogin()" class="btn btn-primary">Login</button>
+        </form>
+    </script>
 </head>
 
 
@@ -29,54 +67,19 @@
         </ul>
     </div>
     <br>
-    <p id=info><br>Please Login</p>
+    <table>
+        <tr>
+            <td><p id=info><br>Please Login</p></td>
+        </tr>
+        <tr>
+            <td>
+                <div id=details style="visibility: visible"></div>
+            </td>
+        </tr>
+    </table>
 
-    <div id=details>
-        <table>
-            <tr>
-                <th style="padding-right: 10px">Select Category:</th>
-                <td>
-                    <select id="categoryDropDown" onchange="showDetails()">
-                        <option> -</option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-        <p id=infoMessage></p>
-
-        <div class="table-responsive">
-            <table id="dataTable" class="table">
-                <tr>
-                    <th style="width: 5%"></th>
-                </tr>
-            </table>
-        </div>
-    </div>
-
-    <div id=loginDetails>
-        <form>
-            ID:
-            <input type="text" id="id"><br>
-            Password:
-            <input type="text" id="password">
-        </form>
-        <button type="button" onclick="checkLogin()">Login</button>
-    </div>
-
-    <div id=addField class=col-4>
-        New Field Name: <input type="text" id="field" value="">
-        <br>
-        <button type="button" onclick="sendNewField()">Add</button>
-
-    </div>
-    <div id= adddata class=col-4>
-        New key: <input type="key" id="newkey" value="">
-        <br>
-        New Value: <input type="newvalue" id="newvalue" value="">
-        <br>
-        <button type="button" onclick="sendNewData()">Add</button>
-    </div>
 
 </div>
+
 </body>
 </html>

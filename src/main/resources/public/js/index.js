@@ -4,28 +4,16 @@ var loggedin = false;
 //function load onload
 function showLogin() {
 
-    document.getElementById("details").style.visibility = "hidden";
-    document.getElementById("info").innerHTML = "Please Login";
-    document.getElementById("loginDetails").style.visibility = "hidden";
-    document.getElementById("addField").style.visibility = "hidden";
-    document.getElementById("adddata").style.visibility = "hidden";
-
 }
 
 //onclick Add button
 function addData() {
-    clearInformation();
-    document.getElementById("details").style.visibility = "hidden";
-    document.getElementById("info").innerHTML = "Add a new field";
-    document.getElementById("loginDetails").style.visibility = "hidden";
-    document.getElementById("addField").style.visibility = "visible";
-    document.getElementById("adddata").style.visibility = "visible";
-
+    document.getElementById("info").innerHTML = "";
+    document.getElementById("details").innerHTML = document.getElementById("addtypeform").innerHTML;
 }
 
 function sendNewField() {
-    let newField = document.getElementById("field").value
-console.log(newField)
+    let newField = document.getElementById("field").value;
     var http = new XMLHttpRequest();
     var url = domainName;
     var params = 'Type=newField';
@@ -34,60 +22,81 @@ console.log(newField)
 //Send the proper header information along with the request
     http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
-    http.onreadystatechange = function() {//Call a function when the state changes.
-        if(http.readyState == 4 && http.status == 200) {
+    http.onreadystatechange = function () {//Call a function when the state changes.
+        if (http.readyState === 4 && http.status === 200) {
             alert(http.responseText);
         }
-    }
+    };
     http.send(params);
 }
+
 //onclick Update button
 function displayUpdate() {
-    clearInformation();
+
 }
 
 //onclick login button
 function displayLogin() {
-    if( loggedin === true){
+
+    if (loggedin === true) {
         document.getElementById("info").innerHTML = "You Already Logged in";
 
         return;
-    } else
-    document.getElementById("loginDetails").style.visibility = "visible";
+    } else {
+        document.getElementById("details").innerHTML =document.getElementById("loginform").innerHTML;
+    }
+
 }
+
 
 //onclick login button submitting id password
 function checkLogin() {
-   let id = document.getElementById("id").value
-    let password = document.getElementById("password").value
+    let id = document.getElementById("id").value;
+    let password = document.getElementById("password").value;
 
-    if (id === "aaa" && password === "bbb"){
+    if (id === "aaa" && password === "bbb") {
         document.getElementById("info").innerHTML = "Login Successful!";
-        document.getElementById("loginDetails").style.visibility = "hidden";
+        document.getElementById("details").innerHTML = "";
         loggedin = true;
-    }else {
+    } else {
         document.getElementById("info").innerHTML = "ID or Password is not valid";
-        document.getElementById("id").value = ""
-        document.getElementById("password").value = ""
+        document.getElementById("id").value = "";
+        document.getElementById("password").value = "";
     }
 
 }
 
 function getTypes() {
 
-if( loggedin === false){
-    document.getElementById("info").innerHTML = "Please Login First";
+    if (loggedin === false) {
+        document.getElementById("info").innerHTML = "Please Login First";
 
-    return;
-}
+        return;
+    }
     let url2 = domainName + "/types";
 
     //Fetch the content of the url using the XMLHttpRequest object
     let req2 = new XMLHttpRequest();
     req2.open("GET", url2);
+    req2.setRequestHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");
     req2.send(null);
-    document.getElementById("details").style.visibility = "visible";
-    document.getElementById("info").innerHTML = "Please select a category";
+    document.getElementById("details").innerHTML = "<br><table>\n" +
+        "            <tr>\n" +
+        "                <th style=\"padding-right: 10px\">Select Category:</th>\n" +
+        "                <td>\n" +
+        "                    <select id=\"categoryDropDown\" onchange=\"showDetails()\">\n" +
+        "                        <option> -</option>\n" +
+        "                    </select>\n" +
+        "                </td>\n" +
+        "            </tr>\n" +
+        "        </table>\n" +
+        "        <p id=infoMessage></p>\n" +
+        "\n" +
+        "        <div class=\"table-responsive\">\n" +
+        "            <table id=\"dataTable\" class=\"table\">\n" +
+        "            </table>\n" +
+        "        </div>";
+    document.getElementById("info").innerHTML = "";
     //register an event handler function
     req2.onreadystatechange = function () {
         if (req2.readyState === 4 && req2.status === 200) {
@@ -120,6 +129,8 @@ function getDatabyType(type) {
     //Fetch the content of the url using the XMLHttpRequest object
     let req1 = new XMLHttpRequest();
     req1.open("GET", url1);
+    req1.setRequestHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");
+
     req1.send(null);
 
     //register an event handler function
@@ -132,7 +143,7 @@ function getDatabyType(type) {
 
                 let key = listOfSecureDetails[i].key;
                 let value = listOfSecureDetails[i].value;
-                addToDataTable(key,value);
+                addToDataTable(key, value);
             }
         }
     }
@@ -150,10 +161,8 @@ function addToDataTable(key, value) {
 }
 
 function sendNewData() {
-    let newKey = document.getElementById("newkey").value
-    console.log(newKey)
-    let newVal = document.getElementById("newvalue").value
-    console.log(newVal)
+    let newKey = document.getElementById("newkey").value;
+    let newVal = document.getElementById("newvalue").value;
     var http = new XMLHttpRequest();
     var url = domainName;
     var params = 'Key=newkey&value=newVal';
@@ -162,13 +171,14 @@ function sendNewData() {
 //Send the proper header information along with the request
     http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
-    http.onreadystatechange = function() {//Call a function when the state changes.
-        if(http.readyState == 4 && http.status == 200) {
+    http.onreadystatechange = function () {//Call a function when the state changes.
+        if (http.readyState === 4 && http.status === 200) {
             alert(http.responseText);
         }
-    }
+    };
     http.send(params);
 }
+
 function showDetails() {
     let category = document.getElementById("categoryDropDown");
     let selectedOption = category.options[category.selectedIndex].value;
