@@ -22,7 +22,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
-        http.csrf().disable().authorizeRequests()
+        http.cors().and().csrf().disable().authorizeRequests()
                 .antMatchers("/", "/css/**/", "/js/**/").permitAll()
                 .antMatchers(HttpMethod.OPTIONS, "**").permitAll()
                 .anyRequest().authenticated()
