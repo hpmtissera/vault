@@ -1,33 +1,65 @@
 const domainName = "https://fandoco-vault.herokuapp.com";
 var loggedin = false;
-
-//function load onload
-function showLogin() {
-
-}
+var source;
 
 //onclick Add button
 function addData() {
-    document.getElementById("info").innerHTML = "";
-    document.getElementById("details").innerHTML = document.getElementById("addtypeform").innerHTML;
+    source = "addData";
+    if (loggedin === false) {
+        document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
+
+        return;
+    } else {
+        document.getElementById("details").innerHTML = document.getElementById("addtypeform").innerHTML;
+        populateTypesDropdown("categoryDropDownAdd");
+
+    }
 }
 
-function sendNewField() {
-    let newField = document.getElementById("field").value;
-    var http = new XMLHttpRequest();
-    var url = domainName;
-    var params = 'Type=newField';
-    http.open('POST', url, true);
+function addEntry() {
+    {
+        let newKey = document.getElementById("addKey").value;
+        let newVal = document.getElementById("addVal").value;
+        let type = document.getElementById("categoryDropDownAdd");
+        let selectedType = type.options[type.selectedIndex].value;
+        let url = domainName + "/data";
+        let body = "{\"type\" : \"" +  selectedType + "\",\"key\" : \"" +  newKey + "\",\"value\" : \"" +  newVal + "\"}";
 
-//Send the proper header information along with the request
-    http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        let postreq = new XMLHttpRequest();
+        postreq.open('POST', url, true);
+        postreq.setRequestHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");
+        postreq.setRequestHeader('Content-type', 'application/json');
+        postreq.send(body);
 
-    http.onreadystatechange = function () {//Call a function when the state changes.
-        if (http.readyState === 4 && http.status === 200) {
-            alert(http.responseText);
+        postreq.onreadystatechange = function () {//Call a function when the state changes.
+            if (postreq.readyState === 4 && postreq.status === 200) {
+                document.getElementById("categoryDropDownAdd").innerHTML = "";
+
+                populateTypesDropdown("categoryDropDownAdd");
+            }
+        };
+    }
+
+}
+
+function onAddType() {
+    let newField = document.getElementById("addType").value;
+    let url = domainName + "/types";
+    let body = "{\"name\" : \"" +  newField + "\"}";
+
+    let postreq = new XMLHttpRequest();
+    postreq.open('POST', url, true);
+    postreq.setRequestHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");
+    postreq.setRequestHeader('Content-type', 'application/json');
+    postreq.send(body);
+
+    postreq.onreadystatechange = function () {//Call a function when the state changes.
+        if (postreq.readyState === 4 && postreq.status === 200) {
+            document.getElementById("categoryDropDownAdd").innerHTML = "";
+
+            populateTypesDropdown("categoryDropDownAdd");
         }
     };
-    http.send(params);
 }
 
 //onclick Update button
@@ -37,27 +69,38 @@ function displayUpdate() {
 
 //onclick login button
 function displayLogin() {
-
     if (loggedin === true) {
-        document.getElementById("info").innerHTML = "You Already Logged in";
-
         return;
     } else {
-        document.getElementById("details").innerHTML =document.getElementById("loginform").innerHTML;
+        document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
     }
 
 }
 
+function displayLogout() {
+    loggedin = false;
+    document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
+    document.getElementById("nav").innerHTML = "";
+
+}
 
 //onclick login button submitting id password
 function checkLogin() {
+
     let id = document.getElementById("id").value;
     let password = document.getElementById("password").value;
 
     if (id === "aaa" && password === "bbb") {
-        document.getElementById("info").innerHTML = "Login Successful!";
         document.getElementById("details").innerHTML = "";
         loggedin = true;
+
+        if (source === "getTypes") {
+            getTypes()
+        }
+        if (source === "addData") {
+            addData()
+        }
+        document.getElementById("nav").innerHTML = document.getElementById("sidemenuArea").innerHTML;
     } else {
         document.getElementById("info").innerHTML = "ID or Password is not valid";
         document.getElementById("id").value = "";
@@ -66,13 +109,7 @@ function checkLogin() {
 
 }
 
-function getTypes() {
-
-    if (loggedin === false) {
-        document.getElementById("info").innerHTML = "Please Login First";
-
-        return;
-    }
+function populateTypesDropdown(id) {
     let url2 = domainName + "/types";
 
     //Fetch the content of the url using the XMLHttpRequest object
@@ -80,23 +117,7 @@ function getTypes() {
     req2.open("GET", url2);
     req2.setRequestHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");
     req2.send(null);
-    document.getElementById("details").innerHTML = "<br><table>\n" +
-        "            <tr>\n" +
-        "                <th style=\"padding-right: 10px\">Select Category:</th>\n" +
-        "                <td>\n" +
-        "                    <select id=\"categoryDropDown\" onchange=\"showDetails()\">\n" +
-        "                        <option> -</option>\n" +
-        "                    </select>\n" +
-        "                </td>\n" +
-        "            </tr>\n" +
-        "        </table>\n" +
-        "        <p id=infoMessage></p>\n" +
-        "\n" +
-        "        <div class=\"table-responsive\">\n" +
-        "            <table id=\"dataTable\" class=\"table\">\n" +
-        "            </table>\n" +
-        "        </div>";
-    document.getElementById("info").innerHTML = "";
+
     //register an event handler function
     req2.onreadystatechange = function () {
         if (req2.readyState === 4 && req2.status === 200) {
@@ -104,14 +125,26 @@ function getTypes() {
             const types = JSON.parse(response);
 
             for (let i = 0; i < types.length; i++) {
-                CreateSelectDropDown(types[i])
+                CreateSelectDropDown(types[i], id)
 
             }
         }
     }
 }
 
-function CreateSelectDropDown(type) {
+function getTypes() {
+    source = "getTypes";
+    if (loggedin === false) {
+        document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
+
+        return;
+    }
+    document.getElementById("details").innerHTML = document.getElementById("typesDropdown").innerHTML;
+
+    populateTypesDropdown("categoryDropDown");
+}
+
+function CreateSelectDropDown(type,id) {
     let dropdownOptions;
     let item;
 
@@ -119,11 +152,15 @@ function CreateSelectDropDown(type) {
     dropdownOptions.setAttribute("value", type);
     item = document.createTextNode(type);
     dropdownOptions.appendChild(item);
-    document.getElementById("categoryDropDown").appendChild(dropdownOptions);
+    document.getElementById(id).appendChild(dropdownOptions);
 }
 
 function getDatabyType(type) {
+    if (loggedin === false) {
+        document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
 
+        return;
+    }
     let url1 = domainName + "/data?type=" + type;
 
     //Fetch the content of the url using the XMLHttpRequest object
@@ -160,34 +197,15 @@ function addToDataTable(key, value) {
     cell2.innerHTML = value;
 }
 
-function sendNewData() {
-    let newKey = document.getElementById("newkey").value;
-    let newVal = document.getElementById("newvalue").value;
-    var http = new XMLHttpRequest();
-    var url = domainName;
-    var params = 'Key=newkey&value=newVal';
-    http.open('POST', url, true);
-
-//Send the proper header information along with the request
-    http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-    http.onreadystatechange = function () {//Call a function when the state changes.
-        if (http.readyState === 4 && http.status === 200) {
-            alert(http.responseText);
-        }
-    };
-    http.send(params);
-}
-
 function showDetails() {
     let category = document.getElementById("categoryDropDown");
     let selectedOption = category.options[category.selectedIndex].value;
-    clearInformation();
-    document.getElementById("infoMessage").innerHTML = "<br>";
 
-    const table = document.getElementById("dataTable");
+    let Table = document.getElementById("dataTable");
+    Table.innerHTML = "";
+    Table = document.getElementById("dataTable");
 
-    const header = table.createTHead();
+    const header = Table.createTHead();
     header.innerHTML = selectedOption;
 
     getDatabyType(selectedOption);
@@ -195,9 +213,3 @@ function showDetails() {
 
 }
 
-function clearInformation() {
-
-    //document.getElementById("categoryDropDown").selectedIndex = "0";
-    const Table = document.getElementById("dataTable");
-    Table.innerHTML = "";
-}
