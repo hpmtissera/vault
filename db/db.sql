@@ -36,7 +36,7 @@ INSERT into secure_data (id, type_id, key, value)
 values ('f3cd7d1e-00da-11e9-8eb2-f2801f1b9fd1', '804a0bd2-00da-11e9-8eb2-f2801f1b9fd1', 'Account Number', '34345334');
 
 INSERT into secure_data(id, type_id, key, value)
-values ('f3cd7e54-00da-11e9-8eb2-f2801f1b9fd1', '1f582452-00db-11e9-8eb2-f2801f1b9fd1', 'Username', 'Piyal');
+values ('f3cd7e54-00da-11e9-8eb2-f2801f1b9fd1', '1f582452-00db-11e9-8eb2-f2801f1b9fd1', 'Username', 'Saman');
 
 INSERT into secure_data (id, type_id, key, value)
 values ('f3cd8340-00da-11e9-8eb2-f2801f1b9fd1', '1f582452-00db-11e9-8eb2-f2801f1b9fd1', 'Password', 'wefd45h343433f');
@@ -45,10 +45,10 @@ INSERT into secure_data (id, type_id, key, value)
 values ('f3cd8340-00da-11e9-8eb2-f2801f1b9fd2', '1f582452-00db-11e9-8eb2-f2801f1b9fd1', 'Account Number', '234282828');
 
 INSERT into secure_data(id, type_id, key, value)
-values ('7a108010-00db-11e9-8eb2-f2801f1b9fd1', '5af906f2-00db-11e9-8eb2-f2801f1b9fd1', 'Username', 'Piyal');
+values ('7a108010-00db-11e9-8eb2-f2801f1b9fd1', '5af906f2-00db-11e9-8eb2-f2801f1b9fd1', 'Username', 'Kamal');
 
 INSERT into secure_data (id, type_id, key, value)
-values ('7a10851a-00db-11e9-8eb2-f2801f1b9fd1', '5af906f2-00db-11e9-8eb2-f2801f1b9fd1', 'Password', 'wefd45h343433f');
+values ('7a10851a-00db-11e9-8eb2-f2801f1b9fd1', '5af906f2-00db-11e9-8eb2-f2801f1b9fd1', 'Password', '4ssw3334f343');
 
 INSERT into secure_data (id, type_id, key, value)
-values ('7a108682-00db-11e9-8eb2-f2801f1b9fd1', '5af906f2-00db-11e9-8eb2-f2801f1b9fd1', 'Account Number', '234282828');
+values ('7a108682-00db-11e9-8eb2-f2801f1b9fd1', '5af906f2-00db-11e9-8eb2-f2801f1b9fd1', 'Account Number', '754332222');
