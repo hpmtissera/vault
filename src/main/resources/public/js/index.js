@@ -1,4 +1,4 @@
-const domainName = "";
+const domainName = "https://fandoco-vault.herokuapp.com";
 var loggedin = false;
 
 
