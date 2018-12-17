@@ -24,8 +24,7 @@ object SecureDataRepository {
         val usernameAndPassword = fullDatabaseUrl.substringAfter("postgres://").substringBeforeLast("@").split(":")
 
 
-        Database.connect("jdbc:postgresql://$databaseUrl", driver = "org.postgresql.Driver",
-                user = usernameAndPassword[0], password = usernameAndPassword[1])
+        Database.connect(dataSource())
 
     }
 

@@ -8,8 +8,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-
 
 @Configuration
 @EnableWebSecurity
@@ -17,6 +17,9 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
     @Autowired
     private val authEntryPoint: AuthenticationEntryPoint? = null
+
+    @Autowired
+    private val userDetailsService: UserDetailsService? = null
 
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
@@ -36,9 +39,8 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
     }
 
     @Autowired
-    @Throws(Exception::class)
     fun configureGlobal(auth: AuthenticationManagerBuilder) {
-        auth.inMemoryAuthentication().withUser("admin").password(encoder().encode("password")).roles("USER");
+        auth.userDetailsService(userDetailsService).passwordEncoder(encoder())
     }
 
 }
