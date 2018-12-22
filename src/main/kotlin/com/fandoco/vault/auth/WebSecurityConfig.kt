@@ -26,16 +26,20 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
         http.cors().and().csrf().disable().authorizeRequests()
                 .antMatchers("/", "/css/**/", "/js/**/").permitAll()
                 .anyRequest().authenticated()
-                .and().httpBasic()
-                .authenticationEntryPoint(authEntryPoint)
-
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
+                .and()
+                .addFilter(JWTAuthenticationFilter(authenticationManager()))
+                .addFilter(JWTAuthorizationFilter(authenticationManager()))
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
     @Bean
     fun encoder(): BCryptPasswordEncoder {
         return BCryptPasswordEncoder()
+    }
+
+    @Throws(Exception::class)
+    public override fun configure(auth: AuthenticationManagerBuilder?) {
+        auth!!.userDetailsService<UserDetailsService>(userDetailsService).passwordEncoder(encoder())
     }
 
     @Autowired

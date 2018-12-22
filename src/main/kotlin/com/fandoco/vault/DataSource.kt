@@ -9,11 +9,7 @@ import javax.sql.DataSource
 @Primary
 fun dataSource(): DataSource {
 
-    var fullDatabaseUrl = System.getenv("DATABASE_URL")
-
-    if (fullDatabaseUrl.isNullOrBlank()) {
-        fullDatabaseUrl = "postgres://vault:password@localhost:5432/vault"
-    }
+    val fullDatabaseUrl = getDatabaseUrl()
 
     val databaseUrl = fullDatabaseUrl.substringAfterLast("@")
     val usernameAndPassword = fullDatabaseUrl.substringAfter("postgres://").substringBeforeLast("@").split(":")
