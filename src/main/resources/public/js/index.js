@@ -68,11 +68,8 @@ function displayUpdate() {
 
 //onclick login button
 function displayLogin() {
-    if (localStorage.getItem('token')== null) {
-        return;
-    } else {
+
         document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
-    }
 
 }
 
