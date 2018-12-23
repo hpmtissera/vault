@@ -52,6 +52,7 @@ class JWTAuthenticationFilter(val authManager: AuthenticationManager) : Username
                 .sign(HMAC512(getSecret().toByteArray()))
 
         res.addHeader(HEADER_STRING, TOKEN_PREFIX + token)
+        res.addHeader("Access-Control-Expose-Headers", "Authorization");
     }
 }
 
