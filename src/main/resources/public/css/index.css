@@ -6,7 +6,7 @@
 .jumbotron {
     background-color: #462b66;
     color: snow;
-    padding: 20px
+    padding: 20px;
 }
 
 .row::after {

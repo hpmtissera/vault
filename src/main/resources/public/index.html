@@ -20,7 +20,7 @@
                 <label for="addType" class="col-sm-5 col-form-label">Enter New Type:</label>
                 <div class="col-sm-5"><input type="addType" class="form-control" id="addType" placeholder=" Type"></div>
             </div>
-            <button id = "addtypebtn" type="button" onclick="onAddType()" class="btn btn-primary">ADD</button>
+            <button id="addtypebtn" type="button" onclick="onAddType()" class="btn btn-primary">ADD</button>
             <br/><br/>
             <table>
                 <tr>
@@ -40,7 +40,7 @@
                 <div class="col-sm-5"><input type="addVal" class="form-control" id="addVal" placeholder=" New Value">
                 </div>
             </div>
-            <button id = "addKeysbtn" type="button" onclick="addEntry()" class="btn btn-primary">ADD</button>
+            <button id="addKeysbtn" type="button" onclick="addEntry()" class="btn btn-primary">ADD</button>
         </form>
     </script>
 
@@ -56,7 +56,7 @@
                 <input type="password" class="form-control" id="password" placeholder="Password">
             </div>
             <button type="button" onclick="checkLogin()" class="btn btn-primary">Login</button>
-            <div id ="info"></div>
+            <div id="info"></div>
         </form>
     </script>
     <script type="text/template" id="menu">
@@ -81,7 +81,7 @@
         </div>
     </script>
     <script type="text/template" id="sidemenuArea">
-        <div class="menu" >
+        <div class="menu">
             <ul>
                 <li id="getdatabtn" onclick="getTypes()">Get Data</li>
                 <li id="addbtn" onclick="addData()">ADD</li>
@@ -94,19 +94,17 @@
 
 <body onload="displayLogin()">
 
-<div class="jumbotron" >
+<div class="jumbotron">
 
-<div class="container">
-    <h1>Vault</h1>
-    <div id="nav" class="menu col-lg-2 col-md-2 col-sm-4 col-xs-12" style="color:black; padding-top: 50px" >
+    <div class="container">
+
+        <h1>Vault</h1>
+
+        <div id="nav" class="menu col-lg-2 col-md-2 col-sm-4 col-xs-12" style="color:black; padding-top: 50px"></div>
+
+        <div id="details" class="col-lg-10 col-md-10 col-sm-8 col-md-12" style="color:black; padding-top: 50px"></div>
 
     </div>
-
-    <div id="details" class="col-lg-10 col-md-10 col-sm-8 col-md-12" style="color:black; padding-top: 50px">
-
-    </div>
-
-</div>
 </div>
 </body>
 </html>

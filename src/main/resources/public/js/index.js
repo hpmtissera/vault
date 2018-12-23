@@ -1,11 +1,10 @@
 const domainName = "https://fandoco-vault.herokuapp.com";
-var loggedin = false;
 var source;
 
 //onclick Add button
 function addData() {
     source = "addData";
-    if (loggedin === false) {
+    if (localStorage.getItem('token')== null) {
         document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
 
         return;
@@ -27,7 +26,7 @@ function addEntry() {
 
         let postreq = new XMLHttpRequest();
         postreq.open('POST', url, true);
-        postreq.setRequestHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");
+        postreq.setRequestHeader("Authorization", localStorage.getItem('token'));
         postreq.setRequestHeader('Content-type', 'application/json');
         postreq.send(body);
 
@@ -49,7 +48,7 @@ function onAddType() {
 
     let postreq = new XMLHttpRequest();
     postreq.open('POST', url, true);
-    postreq.setRequestHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");
+    postreq.setRequestHeader("Authorization", localStorage.getItem('token'));
     postreq.setRequestHeader('Content-type', 'application/json');
     postreq.send(body);
 
@@ -69,7 +68,7 @@ function displayUpdate() {
 
 //onclick login button
 function displayLogin() {
-    if (loggedin === true) {
+    if (localStorage.getItem('token')== null) {
         return;
     } else {
         document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
@@ -78,33 +77,45 @@ function displayLogin() {
 }
 
 function displayLogout() {
-    loggedin = false;
     document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
     document.getElementById("nav").innerHTML = "";
-
+    localStorage.removeItem("token") //Delete accesstoken
 }
 
 //onclick login button submitting id password
 function checkLogin() {
-
+    let token;
     let id = document.getElementById("id").value;
     let password = document.getElementById("password").value;
 
-    if (id === "aaa" && password === "bbb") {
-        document.getElementById("details").innerHTML = "";
-        loggedin = true;
+    let url = domainName + "/login";
+    let body = "{\"userName\" : \"" +  id + "\",\"password\" : \"" +  password + "\"}";
 
-        if (source === "getTypes") {
-            getTypes()
+    let postreq = new XMLHttpRequest();
+    postreq.open('POST', url, true);
+    postreq.setRequestHeader('Content-type', 'application/json');
+    postreq.send(body);
+
+    postreq.onreadystatechange = function () {//Call a function when the state changes.
+        if (postreq.readyState === 4 && postreq.status === 200) {
+            let myHeader = postreq.getResponseHeader("Authorization");
+
+            localStorage.setItem('token', myHeader); // write
+           //token = localStorage.getItem('token'); // read
+            document.getElementById("details").innerHTML = "";
+            if (source === "getTypes") {
+                getTypes()
+            }
+            if (source === "addData") {
+                addData()
+            }
+            document.getElementById("nav").innerHTML = document.getElementById("sidemenuArea").innerHTML;
+
+        }else {
+            document.getElementById("info").innerHTML = "ID or Password is not valid";
+            document.getElementById("id").value = "";
+            document.getElementById("password").value = "";
         }
-        if (source === "addData") {
-            addData()
-        }
-        document.getElementById("nav").innerHTML = document.getElementById("sidemenuArea").innerHTML;
-    } else {
-        document.getElementById("info").innerHTML = "ID or Password is not valid";
-        document.getElementById("id").value = "";
-        document.getElementById("password").value = "";
     }
 
 }
@@ -115,7 +126,7 @@ function populateTypesDropdown(id) {
     //Fetch the content of the url using the XMLHttpRequest object
     let req2 = new XMLHttpRequest();
     req2.open("GET", url2);
-    req2.setRequestHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");
+    req2.setRequestHeader("Authorization", localStorage.getItem('token'));
     req2.send(null);
 
     //register an event handler function
@@ -134,7 +145,7 @@ function populateTypesDropdown(id) {
 
 function getTypes() {
     source = "getTypes";
-    if (loggedin === false) {
+    if (localStorage.getItem('token')== null) {
         document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
 
         return;
@@ -156,7 +167,7 @@ function CreateSelectDropDown(type,id) {
 }
 
 function getDatabyType(type) {
-    if (loggedin === false) {
+    if (localStorage.getItem('token')== null) {
         document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
 
         return;
@@ -166,7 +177,7 @@ function getDatabyType(type) {
     //Fetch the content of the url using the XMLHttpRequest object
     let req1 = new XMLHttpRequest();
     req1.open("GET", url1);
-    req1.setRequestHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");
+    req1.setRequestHeader("Authorization", localStorage.getItem('token'));
 
     req1.send(null);
 
