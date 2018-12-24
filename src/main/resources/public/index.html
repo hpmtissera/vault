@@ -59,7 +59,8 @@
                 <input type="password" class="form-control" id="password" placeholder="Password">
             </div>
             <button type="button" onclick="checkLogin()" class="btn btn-primary">Login</button>
-            <div id="info"></div>
+            <p><br/></p>
+            <div id="info" style="color: red"></div>
         </form>
     </script>
     <script type="text/template" id="menu">
@@ -89,6 +90,7 @@
                 <li id="getdatabtn" onclick="getTypes()">Get Data</li>
                 <li id="addbtn" onclick="addData()">ADD</li>
                 <li id="updatebtn" onclick="displayUpdate()">Update</li>
+                <li id="deletebtn" onclick="displayDelete()">Delete</li>
                 <li id="logoutbtn" onclick="displayLogout()">Logout</li>
             </ul>
         </div>
