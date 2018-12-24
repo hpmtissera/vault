@@ -1,76 +1,16 @@
 const domainName = "https://fandoco-vault.herokuapp.com";
-var source;
-
-//onclick Add button
-function addData() {
-    source = "addData";
-    if (localStorage.getItem('token')== null) {
-        document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
-
-        return;
-    } else {
-        document.getElementById("details").innerHTML = document.getElementById("addtypeform").innerHTML;
-        populateTypesDropdown("categoryDropDownAdd");
-
-    }
-}
-
-function addEntry() {
-    {
-        let newKey = document.getElementById("addKey").value;
-        let newVal = document.getElementById("addVal").value;
-        let type = document.getElementById("categoryDropDownAdd");
-        let selectedType = type.options[type.selectedIndex].value;
-        let url = domainName + "/data";
-        let body = "{\"type\" : \"" +  selectedType + "\",\"key\" : \"" +  newKey + "\",\"value\" : \"" +  newVal + "\"}";
-
-        let postreq = new XMLHttpRequest();
-        postreq.open('POST', url, true);
-        postreq.setRequestHeader("Authorization", localStorage.getItem('token'));
-        postreq.setRequestHeader('Content-type', 'application/json');
-        postreq.send(body);
-
-        postreq.onreadystatechange = function () {//Call a function when the state changes.
-            if (postreq.readyState === 4 && postreq.status === 200) {
-                document.getElementById("categoryDropDownAdd").innerHTML = "";
-
-                populateTypesDropdown("categoryDropDownAdd");
-            }
-        };
-    }
-
-}
-
-function onAddType() {
-    let newField = document.getElementById("addType").value;
-    let url = domainName + "/types";
-    let body = "{\"name\" : \"" +  newField + "\"}";
-
-    let postreq = new XMLHttpRequest();
-    postreq.open('POST', url, true);
-    postreq.setRequestHeader("Authorization", localStorage.getItem('token'));
-    postreq.setRequestHeader('Content-type', 'application/json');
-    postreq.send(body);
-
-    postreq.onreadystatechange = function () {//Call a function when the state changes.
-        if (postreq.readyState === 4 && postreq.status === 200) {
-            document.getElementById("categoryDropDownAdd").innerHTML = "";
-
-            populateTypesDropdown("categoryDropDownAdd");
-        }
-    };
-}
-
-//onclick Update button
-function displayUpdate() {
-
-}
 
 //onclick login button
 function displayLogin() {
+    sessionStorage.setItem("source", "getTypes");
 
+    if (localStorage.getItem("token") == null) {
         document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
+    } else {
+        getTypes();
+        document.getElementById("nav").innerHTML = document.getElementById("sidemenuArea").innerHTML;
 
+    }
 }
 
 function displayLogout() {
@@ -86,7 +26,7 @@ function checkLogin() {
     let password = document.getElementById("password").value;
 
     let url = domainName + "/login";
-    let body = "{\"userName\" : \"" +  id + "\",\"password\" : \"" +  password + "\"}";
+    let body = "{\"userName\" : \"" + id + "\",\"password\" : \"" + password + "\"}";
 
     let postreq = new XMLHttpRequest();
     postreq.open('POST', url, true);
@@ -98,17 +38,23 @@ function checkLogin() {
             let myHeader = postreq.getResponseHeader("Authorization");
 
             localStorage.setItem('token', myHeader); // write
-           //token = localStorage.getItem('token'); // read
+            //token = localStorage.getItem('token'); // read
             document.getElementById("details").innerHTML = "";
-            if (source === "getTypes") {
-                getTypes()
-            }
-            if (source === "addData") {
-                addData()
+            switch (sessionStorage.getItem("source")
+                ) {
+                case "getTypes":
+                    getTypes();
+                    break;
+                case "addData":
+                    addData();
+                    break;
+                default:
+                    getTypes();
+                    break;
             }
             document.getElementById("nav").innerHTML = document.getElementById("sidemenuArea").innerHTML;
 
-        }else {
+        } else {
             document.getElementById("info").innerHTML = "ID or Password is not valid";
             document.getElementById("id").value = "";
             document.getElementById("password").value = "";
@@ -133,7 +79,7 @@ function populateTypesDropdown(id) {
             const types = JSON.parse(response);
 
             for (let i = 0; i < types.length; i++) {
-                CreateSelectDropDown(types[i], id)
+                createSelectDropdown(types[i], id)
 
             }
         }
@@ -141,8 +87,8 @@ function populateTypesDropdown(id) {
 }
 
 function getTypes() {
-    source = "getTypes";
-    if (localStorage.getItem('token')== null) {
+    sessionStorage.setItem("source", "getTypes");
+    if (localStorage.getItem('token') == null) {
         document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
 
         return;
@@ -152,19 +98,19 @@ function getTypes() {
     populateTypesDropdown("categoryDropDown");
 }
 
-function CreateSelectDropDown(type,id) {
+function createSelectDropdown(itemName, id) {
     let dropdownOptions;
     let item;
 
     dropdownOptions = document.createElement("option");
-    dropdownOptions.setAttribute("value", type);
-    item = document.createTextNode(type);
+    dropdownOptions.setAttribute("value", itemName);
+    item = document.createTextNode(itemName);
     dropdownOptions.appendChild(item);
     document.getElementById(id).appendChild(dropdownOptions);
 }
 
-function getDatabyType(type) {
-    if (localStorage.getItem('token')== null) {
+function getDatabyType(type, page, callback) {
+    if (localStorage.getItem('token') == null) {
         document.getElementById("details").innerHTML = document.getElementById("loginform").innerHTML;
 
         return;
@@ -184,11 +130,16 @@ function getDatabyType(type) {
             let response = req1.responseText;
             let listOfSecureDetails = JSON.parse(response);
 
-            for (let i = 0; i < listOfSecureDetails.length; i++) {
+            if (page === "getData") {
+                for (let i = 0; i < listOfSecureDetails.length; i++) {
 
-                let key = listOfSecureDetails[i].key;
-                let value = listOfSecureDetails[i].value;
-                addToDataTable(key, value);
+                    let key = listOfSecureDetails[i].key;
+                    let value = listOfSecureDetails[i].value;
+
+                    addToDataTable(key, value);
+                }
+            } else {
+                callback(listOfSecureDetails);
             }
         }
     }
@@ -216,8 +167,10 @@ function showDetails() {
     const header = Table.createTHead();
     header.innerHTML = selectedOption;
 
-    getDatabyType(selectedOption);
+    getDatabyType(selectedOption, "getData");
+}
 
-
+function help() {
+    document.getElementById("details").innerHTML = "<p>HELP</p>"
 }
 
