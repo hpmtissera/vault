@@ -1,5 +1,7 @@
 package com.fandoco.vault
 
+import com.fandoco.vault.auth.User
+import com.fandoco.vault.auth.UserRepository
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
@@ -37,7 +39,7 @@ object SecureDataRepository {
 
     fun printAll() {
 
-        val types = getAllTypes()
+        val types = getAllTypes(UserRepository.getUserByUsername("admin")!!)
         when {
             types.isEmpty() -> println("\nTable is empty.")
             else -> println(types)
@@ -50,13 +52,14 @@ object SecureDataRepository {
         }
     }
 
-    fun addType(name: String): String {
+    fun addType(user: User, name: String): String {
         var id: String? = null
         transaction {
             // print sql to std-out
             addLogger(StdOutSqlLogger)
 
             val entityId = TypeTable.insert { row ->
+                row[TypeTable.user] = EntityID(UUID.fromString(user.id), UserRepository.UserTable)
                 row[TypeTable.name] = name
             } get TypeTable.id
 
@@ -69,13 +72,13 @@ object SecureDataRepository {
         }
     }
 
-    fun addEntry(type: String, key: String, value: String): String {
+    fun addEntry(user: User, type: String, key: String, value: String): String {
         var id: String? = null
         transaction {
             // print sql to std-out
             addLogger(StdOutSqlLogger)
 
-            val typeRow: TypeRow = getTypeByName(type) ?: throw Exception("Type $type does not exists!")
+            val typeRow: TypeRow = getTypeByName(user, type) ?: throw Exception("Type $type does not exists!")
 
             val entityId = SecureDataTable.insert { row ->
                 row[SecureDataTable.type] = typeRow.id
@@ -92,12 +95,12 @@ object SecureDataRepository {
         }
     }
 
-    fun getTypeIdByName(name: String): UUID? {
+    fun getTypeIdByName(user: User, name: String): UUID? {
         var id: UUID? = null
         transaction {
             addLogger(StdOutSqlLogger)
 
-            val row = TypeTable.select { TypeTable.name eq name }.singleOrNull()
+            val row = TypeTable.select { (TypeTable.user eq UUID.fromString(user.id)) and (TypeTable.name eq name) }.singleOrNull()
             if (row != null) {
                 id = row[TypeTable.id].value
             }
@@ -105,12 +108,12 @@ object SecureDataRepository {
         return id
     }
 
-    fun getTypeByName(name: String): TypeRow? {
+    fun getTypeByName(user: User, name: String): TypeRow? {
         var row: TypeRow? = null
         transaction {
             addLogger(StdOutSqlLogger)
 
-            row = TypeRow.find { TypeTable.name eq name }.singleOrNull()
+            row = TypeRow.find { (TypeTable.name eq name) and (TypeTable.user eq UUID.fromString(user.id)) }.singleOrNull()
         }
         return row
     }
@@ -123,7 +126,7 @@ object SecureDataRepository {
 
             val row = (TypeTable innerJoin SecureDataTable)
                     .slice(SecureDataTable.id, TypeTable.name, SecureDataTable.key, SecureDataTable.value)
-                    .select { TypeTable.id eq SecureDataTable.type }.singleOrNull()
+                    .select { (TypeTable.id eq SecureDataTable.type) and (SecureDataTable.id eq UUID.fromString(id)) }.singleOrNull()
 
             if (row != null) {
                 entry = SecureDataEntry(
@@ -136,7 +139,7 @@ object SecureDataRepository {
         return entry
     }
 
-    fun getEntry(type: String, key: String): SecureDataEntry? {
+    fun getEntry(user: User, type: String, key: String): SecureDataEntry? {
         var entry: SecureDataEntry? = null
         transaction {
             addLogger(StdOutSqlLogger)
@@ -144,7 +147,8 @@ object SecureDataRepository {
             val row = (TypeTable innerJoin SecureDataTable)
                     .slice(SecureDataTable.id, TypeTable.name, SecureDataTable.key, SecureDataTable.value)
                     .select {
-                        TypeTable.id eq SecureDataTable.type and (TypeTable.name eq type) and (SecureDataTable.key eq key)
+                        TypeTable.id eq SecureDataTable.type and (TypeTable.user eq UUID.fromString(user.id))
+                                .and(TypeTable.name eq type) and (SecureDataTable.key eq key)
                     }.singleOrNull()
 
             if (row != null) {
@@ -158,7 +162,7 @@ object SecureDataRepository {
         return entry
     }
 
-    fun getEntries(type: String): List<SecureDataEntry> {
+    fun getEntries(user: User, type: String): List<SecureDataEntry> {
         val entries = ArrayList<SecureDataEntry>()
         transaction {
             addLogger(StdOutSqlLogger)
@@ -167,6 +171,7 @@ object SecureDataRepository {
                     .slice(SecureDataTable.id, TypeTable.name, SecureDataTable.key, SecureDataTable.value)
                     .select {
                         TypeTable.id eq SecureDataTable.type
+                        TypeTable.user eq UUID.fromString(user.id)
                         TypeTable.name eq type
                     }.forEach { row ->
                         entries.add(SecureDataEntry(
@@ -188,27 +193,28 @@ object SecureDataRepository {
         return entries
     }
 
-    fun getAllTypes(): List<String> {
+    fun getAllTypes(user: User): List<String> {
         val types = HashSet<String>()
         transaction {
             addLogger(StdOutSqlLogger)
-            TypeTable.slice(TypeTable.name).selectAll().forEach { row ->
+            TypeTable.slice(TypeTable.name).select {
+                TypeTable.user eq UUID.fromString(user.id)
+            }.forEach { row ->
                 types.add(row[TypeTable.name])
             }
-
         }
         return types.toList()
     }
 
-    fun updateEntry(entry: SecureDataEntry) {
-        updateEntry(entry.type, entry.key, entry.value)
+    fun updateEntry(user: User, entry: SecureDataEntry) {
+        updateEntry(user, entry.type, entry.key, entry.value)
     }
 
-    fun updateEntry(type: String, key: String, value: String?) {
+    fun updateEntry(user: User, type: String, key: String, value: String?) {
         transaction {
             addLogger(StdOutSqlLogger)
 
-            val typeId: UUID = getTypeIdByName(type) ?: throw Exception("Type $type does not exists!")
+            val typeId: UUID = getTypeIdByName(user, type) ?: throw Exception("Type $type does not exists!")
 
             SecureDataTable.update({ (SecureDataTable.type eq typeId) and (SecureDataTable.key eq key) })
             {
@@ -218,13 +224,13 @@ object SecureDataRepository {
         }
     }
 
-    fun deleteTypeByName(type: String) {
+    fun deleteTypeByName(user: User, type: String) {
         transaction {
             addLogger(StdOutSqlLogger)
 
-            deleteEntries(type)
+            deleteEntries(user, type)
 
-            val typeId: UUID = getTypeIdByName(type) ?: throw Exception("Type $type does not exists!")
+            val typeId: UUID = getTypeIdByName(user, type) ?: throw Exception("Type $type does not exists!")
 
             TypeTable.deleteWhere {
                 TypeTable.id eq typeId
@@ -232,11 +238,11 @@ object SecureDataRepository {
         }
     }
 
-    fun deleteEntries(type: String) {
+    fun deleteEntries(user: User, type: String) {
         transaction {
             addLogger(StdOutSqlLogger)
 
-            val typeId: UUID = getTypeIdByName(type) ?: throw Exception("Type $type does not exists!")
+            val typeId: UUID = getTypeIdByName(user, type) ?: throw Exception("Type $type does not exists!")
 
             SecureDataTable.deleteWhere {
                 SecureDataTable.type eq typeId
@@ -244,11 +250,11 @@ object SecureDataRepository {
         }
     }
 
-    fun deleteEntry(type: String, key: String) {
+    fun deleteEntry(user: User, type: String, key: String) {
         transaction {
             addLogger(StdOutSqlLogger)
 
-            val typeId: UUID = getTypeIdByName(type) ?: throw Exception("Type $type does not exists!")
+            val typeId: UUID = getTypeIdByName(user, type) ?: throw Exception("Type $type does not exists!")
 
             SecureDataTable.deleteWhere {
                 (SecureDataTable.type eq typeId) and (SecureDataTable.key eq key)
@@ -266,21 +272,17 @@ object SecureDataRepository {
         }
     }
 
-    fun addTestData() {
-        SecureDataRepository.addEntry("Postbank", "Username", "Saman")
-        SecureDataRepository.addEntry("Postbank", "Password", "Kamal")
-        SecureDataRepository.addEntry("Postbank", "AccountNumber", "23434343")
-    }
-
 }
 
 object TypeTable : UUIDTable("type") {
+    val user = reference("user_id", UserRepository.UserTable)
     val name = text("name")
 }
 
 class TypeRow(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<TypeRow>(TypeTable)
 
+    var user by UserRepository.UserRow referencedOn TypeTable.user
     var name by TypeTable.name
 }
 

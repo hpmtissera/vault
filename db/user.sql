@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS secure_data;
+DROP TABLE IF EXISTS type;
 DROP TABLE IF EXISTS "user";
 
 CREATE TABLE "user" (

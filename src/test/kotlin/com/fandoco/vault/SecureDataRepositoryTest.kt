@@ -1,5 +1,6 @@
 package com.fandoco.vault
 
+import com.fandoco.vault.auth.UserRepository
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestInstance
@@ -13,22 +14,28 @@ class SecureDataRepositoryTest {
     fun testRepository() {
 
         SecureDataRepository.deleteAll()
+        UserRepository.deleteAll()
+
+        // Add user
+        UserRepository.addUser("Administrator", "admin", "$2a\$10\$xMtxPuXs9CXtb4mnA2SG0.91D0Oc4a2hgFW9wLitoBYQD.u.uaDUq")
+
+        val user = UserRepository.getUserByUsername("admin")!!
 
         // Add types
-        SecureDataRepository.addType("Post Bank")
-        SecureDataRepository.addType(RAKUTEN_BANK)
+        SecureDataRepository.addType(user, "Post Bank")
+        SecureDataRepository.addType(user, RAKUTEN_BANK)
 
         // Get types
-        val type1 = SecureDataRepository.getTypeByName("Post Bank")
+        val type1 = SecureDataRepository.getTypeByName(user, "Post Bank")
         assertEquals("Post Bank", type1?.name)
 
         // Add entry
-        val id1 = SecureDataRepository.addEntry("Post Bank", "Username", "Saman")
-        val id2 = SecureDataRepository.addEntry(RAKUTEN_BANK, "Password", "Kamal")
-        val id3 = SecureDataRepository.addEntry(RAKUTEN_BANK, "Username", "Sunil")
+        val id1 = SecureDataRepository.addEntry(user, "Post Bank", "Username", "Saman")
+        val id2 = SecureDataRepository.addEntry(user, RAKUTEN_BANK, "Password", "Kamal")
+        val id3 = SecureDataRepository.addEntry(user, RAKUTEN_BANK, "Username", "Sunil")
 
         // Get entry by type
-        val rakutenBankEntries = SecureDataRepository.getEntries(RAKUTEN_BANK)
+        val rakutenBankEntries = SecureDataRepository.getEntries(user, RAKUTEN_BANK)
         assertEquals(2, rakutenBankEntries.size)
 
         assertEquals(RAKUTEN_BANK, rakutenBankEntries[0].type)
@@ -41,17 +48,17 @@ class SecureDataRepositoryTest {
 
 
         // Update entry
-        SecureDataRepository.updateEntry(SecureDataEntry("Post Bank", "Username", "Samankamal"))
+        SecureDataRepository.updateEntry(user, SecureDataEntry("Post Bank", "Username", "Samankamal"))
 
-        val updatedEntry = SecureDataRepository.getEntry("Post Bank", "Username")
+        val updatedEntry = SecureDataRepository.getEntry(user, "Post Bank", "Username")
         assertEquals("Samankamal", updatedEntry?.value)
 
         // Delete entry
-        SecureDataRepository.deleteEntry("Post Bank", "Username")
+        SecureDataRepository.deleteEntry(user, "Post Bank", "Username")
 
-        assertEquals(0, SecureDataRepository.getEntries("Post Bank").size)
+        assertEquals(0, SecureDataRepository.getEntries(user, "Post Bank").size)
 
         SecureDataRepository.deleteAll()
-
+        UserRepository.deleteAll()
     }
 }

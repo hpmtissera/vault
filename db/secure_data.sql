@@ -5,8 +5,9 @@ CREATE TABLE type
 (
   id   uuid
     CONSTRAINT unique_type_id PRIMARY KEY,
-  name TEXT
-    CONSTRAINT unique_name UNIQUE NOT NULL
+  user_id uuid REFERENCES "user" (id) NOT NULL,
+  name TEXT NOT NULL,
+  CONSTRAINT unique_userid_name UNIQUE (user_id, name)
 );
 
 CREATE TABLE secure_data
@@ -19,12 +20,12 @@ CREATE TABLE secure_data
   CONSTRAINT unique_type_key UNIQUE (type_id, key)
 );
 
-INSERT into type(id, name)
-values ('804a0bd2-00da-11e9-8eb2-f2801f1b9fd1', 'Rakuten Bank');
-INSERT into type(id, name)
-values ('1f582452-00db-11e9-8eb2-f2801f1b9fd1', 'Post Bank');
-INSERT into type(id, name)
-values ('5af906f2-00db-11e9-8eb2-f2801f1b9fd1', 'Commercial Bank');
+INSERT into type(id, user_id, name)
+values ('804a0bd2-00da-11e9-8eb2-f2801f1b9fd1', '4310686d-bbb9-46a7-aa95-53ea2ec92618', 'Rakuten Bank');
+INSERT into type(id, user_id, name)
+values ('1f582452-00db-11e9-8eb2-f2801f1b9fd1', '4310686d-bbb9-46a7-aa95-53ea2ec92618', 'Post Bank');
+INSERT into type(id, user_id, name)
+values ('5af906f2-00db-11e9-8eb2-f2801f1b9fd1', '4310686d-bbb9-46a7-aa95-53ea2ec92618', 'Commercial Bank');
 
 INSERT into secure_data(id, type_id, key, value)
 values ('f3cd774c-00da-11e9-8eb2-f2801f1b9fd1', '804a0bd2-00da-11e9-8eb2-f2801f1b9fd1', 'Username', 'Piyal');

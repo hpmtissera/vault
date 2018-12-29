@@ -5,10 +5,7 @@ import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.UUIDTable
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
@@ -51,5 +48,31 @@ object UserRepository {
         return user
     }
 
+    fun addUser(name: String, username: String, password: String): String {
+        var id: String? = null
+        transaction {
+            // print sql to std-out
+            addLogger(StdOutSqlLogger)
+
+            val entityId = UserTable.insert { row ->
+                row[UserTable.name] = name
+                row[UserTable.username] = username
+                row[UserTable.password] = password
+            } get UserTable.id
+
+            id = entityId?.value.toString()
+
+        }
+        when (id) {
+            null -> throw Exception("Error while trying to add user. {name: $name, username: $username, password: $password")
+            else -> return id as String
+        }
+    }
+
+    fun deleteAll() {
+        transaction {
+            UserTable.deleteAll()
+        }
+    }
 
 }
