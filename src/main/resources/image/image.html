@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image</title>
+    <script src="image.js"></script>
+    <style>
+        label {
+            float: left;
+            text-align: left;
+            word-break: break-word;
+            width: 1200px;
+            padding: 15px;
+        }
+
+        #encodedImage {
+            float: left;
+            text-align: left;
+            width: 1200px;
+        }
+    </style>
+</head>
+<body>
+<input accept="image/*" id="imageInput" type="file">
+<button id="upload" onclick="uploadImage()">Upload</button>
+<button id="encode" onclick="encodeImage()">Encode</button>
+<br/>
+<br/>
+<input id="encodedImage" type="text"/>
+<button id="decode" onclick="decodeImage()">Decode</button>
+<br/>
+<br/>
+<canvas id="imgCanvas"></canvas>
+<br/>
+<br/>
+<label id="output"></label>
+<br/>
+<br/>
+</body>
+</html>
