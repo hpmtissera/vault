@@ -50,3 +50,31 @@ function showValue() {
     document.getElementById("updateVal").value = value;
     console.log(value);
 }
+
+function updateEntry() {
+    let updatedValue = document.getElementById("updateVal").value;
+    let key = document.getElementById("keysDropDownCommon");
+    let selectedKey = key.options[key.selectedIndex].value;
+    let category = document.getElementById("typesDropDownCommon");
+    let selectedOption = category.options[category.selectedIndex].value;
+    console.log(updatedValue);
+    console.log(selectedKey);
+    console.log(selectedOption);
+    let url = domainName + "/data";
+    let body = "{\"type\" : \"" + selectedOption + "\",\"key\" : \"" + selectedKey + "\",\"value\" : \"" + updatedValue + "\"}";
+
+
+    let postreq = new XMLHttpRequest();
+    postreq.open('UPDATE', url, true);
+    postreq.setRequestHeader("Authorization", localStorage.getItem('token'));
+    postreq.setRequestHeader('Content-type', 'application/json');
+    postreq.send(body);
+
+    postreq.onreadystatechange = function () {//Call a function when the state changes.
+        if (postreq.readyState === 4 && postreq.status === 200) {
+            document.getElementById("typesDropDownCommon").innerHTML = "";
+
+            populateTypesDropdown("typesDropDownCommon");
+        }
+    };
+}
